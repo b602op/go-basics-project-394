@@ -12,8 +12,6 @@ const (
 	special   = "!@#$%^&*"
 )
 
-const allChars = lowercase + uppercase + digits + special
-
 func NextRandom(number int) int {
 	return (16807 * number) % 2147483647
 }
@@ -38,8 +36,11 @@ func GeneratePassword(length int, seed int, useUppercase, useDigits, useSpecial 
 
 	b := make([]byte, length)
 
+	state := seed
+
 	for i := range b {
-		b[i] = currentAllChars[NextRandom(seed+i)%len(currentAllChars)]
+		state = NextRandom(state)
+		b[i] = currentAllChars[state%len(currentAllChars)]
 	}
 
 	return string(b)
