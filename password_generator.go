@@ -10,83 +10,77 @@ const (
 	uppercase = "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
 	digits    = "0123456789"
 	special   = "!@#$%^&*"
+	minLength = 8
 )
 
+// NextRandom возвращает следующее псевдослучайное число
+// по линейному конгруэнтному генератору.
 func NextRandom(number int) int {
 	return (16807 * number) % 2147483647
 }
 
+// GeneratePassword генерирует пароль заданной длины по числу-ключу seed.
+// Набор символов определяется флагами useUppercase, useDigits, useSpecial.
 func GeneratePassword(length int, seed int, useUppercase, useDigits, useSpecial bool) string {
-	if length <= 0 {
-		return ""
-	}
-	currentAllChars := lowercase
-
+	alphabet := lowercase
 	if useUppercase {
-		currentAllChars += uppercase
+		alphabet += uppercase
 	}
-
 	if useDigits {
-		currentAllChars += digits
+		alphabet += digits
 	}
-
 	if useSpecial {
-		currentAllChars += special
+		alphabet += special
 	}
 
-	b := make([]byte, length)
+	var sb strings.Builder
+	current := seed
 
-	state := seed
-
-	for i := range b {
-		state = NextRandom(state)
-		b[i] = currentAllChars[state%len(currentAllChars)]
+	for i := 0; i < length; i++ {
+		current = NextRandom(current)
+		sb.WriteByte(alphabet[current%len(alphabet)])
 	}
 
-	return string(b)
+	return sb.String()
 }
 
-func CheckPassword(password string) string {
-	hasMinLength := len(password) >= 8
-	hasLower := false
-	hasUpper := false
-	hasDigit := false
-	hasSpecial := false
-
-	for i := 0; i < len(password); i++ {
-		c := password[i]
-
-		switch {
-		case strings.IndexByte(lowercase, c) >= 0:
-			hasLower = true
-		case strings.IndexByte(uppercase, c) >= 0:
-			hasUpper = true
-		case strings.IndexByte(digits, c) >= 0:
-			hasDigit = true
-		case strings.IndexByte(special, c) >= 0:
-			hasSpecial = true
+// has сообщает, содержит ли password хотя бы один символ из chars.
+func has(password, chars string) bool {
+	for _, c := range password {
+		if strings.ContainsRune(chars, c) {
+			return true
 		}
 	}
+	return false
+}
 
+// passwordScore возвращает число выполненных критериев надёжности (0–5).
+func passwordScore(password string) int {
 	score := 0
-	if hasLower {
+	if has(password, lowercase) {
 		score++
 	}
-	if hasUpper {
+	if has(password, uppercase) {
 		score++
 	}
-	if hasDigit {
+	if has(password, digits) {
 		score++
 	}
-	if hasSpecial {
+	if has(password, special) {
 		score++
 	}
-	if hasMinLength {
+	if len(password) >= minLength {
 		score++
 	}
+	return score
+}
+
+// CheckPassword оценивает надёжность пароля по пяти критериям
+// и возвращает текстовый вердикт с оценкой.
+func CheckPassword(password string) string {
+	score := passwordScore(password)
 
 	var verdict string
-
 	switch score {
 	case 5:
 		verdict = "Очень надёжный"

@@ -10,6 +10,8 @@ func main() {
 	fmt.Println()
 	fmt.Println("== Проверка надёжности ==")
 	fmt.Println("abc        ->", CheckPassword("abc"))
+	fmt.Println("abcdefgh   ->", CheckPassword("abcdefgh"))
 	fmt.Println("abcdef1234 ->", CheckPassword("abcdef1234"))
+	fmt.Println("Abcdef1234 ->", CheckPassword("Abcdef1234"))
 	fmt.Println("Abcdef123! ->", CheckPassword("Abcdef123!"))
 }
